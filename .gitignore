@@ -1,0 +1,11 @@
+# 가상 환경 관련 폴더 무시
+venv/
+.venv/
+.env
+
+# Python 관련 불필요한 파일 무시
+__pycache__/
+*.pyc
+*.pyo
+
+
