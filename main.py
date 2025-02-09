@@ -11,8 +11,8 @@ from dotenv import load_dotenv
 load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
 
-# OpenAI 클라이언트 선언 (타임아웃 설정 추가)
-client = openai.OpenAI(api_key=openai_api_key)
+# OpenAI 비동기 클라이언트 사용
+client = openai.AsyncOpenAI(api_key=openai_api_key)
 
 app = FastAPI()
 
@@ -65,7 +65,7 @@ async def recommend_diet(goal: str):
     try:
         guideline = goal_guidelines.get(goal, "건강한 식단을 추천해줘.")
 
-        response = client.chat.completions.create(
+        response = await client.chat.completions.create( # 비동기 처리
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": """너는는 한국식 건강 식단 전문가야.
@@ -86,7 +86,7 @@ async def recommend_diet(goal: str):
 - 음식3 - [중량 (g), 칼로리 (kcal)]
 - 음식4 - [중량 (g), 칼로리 (kcal)]
 
-**아침 영양 정보**:
+**아침 영양 정보**:                 
 - 총 칼로리: XX kcal
 - 탄수화물: XX g
 - 단백질: XX g
