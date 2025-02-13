@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 import openai
 import os
 from dotenv import load_dotenv
+import time
  
 
 # 환경 변수 로드 확인
@@ -16,7 +17,7 @@ client = openai.AsyncOpenAI(api_key=openai_api_key)
 
 app = FastAPI()
 
-# ✅ CORS 설정 추가
+# CORS 설정 추가
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -60,8 +61,9 @@ goal_guidelines = {
 @app.get("/recommend")
 async def recommend_diet(goal: str):
     """
-    사용자의 목표에 맞는 3가지 식단을 추천하는 API (한식 위주, 목표별 세부 조건 반영)
+    사용자의 목표에 맞는 식단을 추천하는 API (한식 위주, 목표별 세부 조건 반영)
     """
+    start_time = time.time()  # 시작 시간 기록
     try:
         guideline = goal_guidelines.get(goal, "건강한 식단을 추천해줘.")
 
@@ -124,30 +126,22 @@ async def recommend_diet(goal: str):
 
 **저녁 영양 팁**:
 - 저녁 식사에서 중요한 영양 요소에 대한 설명.
-
-### 식단 2:
-(동일한 형식)
-
-### 식단 3:
-(동일한 형식)
 """
                 }
             ]
         )
 
+        end_time = time.time()  # 종료 시간 기록
+        execution_time = end_time - start_time  # 실행 시간 계산
+
         # GPT 응답 처리
         full_text = response.choices[0].message.content
-        split_texts = re.split(r'(?=### 식단 2:|### 식단 3:)', full_text)
-
-        if len(split_texts) < 3:
-            meal_recommendations = [full_text, "", ""]
-        else:
-            meal_recommendations = [s.strip() for s in split_texts[:3]]
 
         return JSONResponse(
             content={
                 "goal": goal,
-                "meal_options": meal_recommendations
+                "meal_options": full_text,
+                "execution_time": execution_time  # 실행 시간 포함
             },
             status_code=200
         )
